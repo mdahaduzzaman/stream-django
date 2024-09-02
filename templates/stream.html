@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #output {
+            white-space: pre-wrap; /* Preserves whitespace and line breaks */
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Streaming Data Example</h1>
+    <div id="output">Waiting for data...</div>
+
+    <script>
+        async function fetchStream() {
+            try {
+                // Adjust the URL to your streaming endpoint
+                const response = await fetch('/stream-text/');
+                
+                if (!response.ok) {
+                    console.error('Failed to fetch stream');
+                    return;
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                const output = document.getElementById('output');
+
+                // Process the streaming data
+                function processText({ done, value }) {
+                    if (done) {
+                        console.log('Stream finished');
+                        return;
+                    }
+
+                    // Decode the chunk and append to output
+                    output.textContent += decoder.decode(value, { stream: true });
+
+                    // Continue reading
+                    reader.read().then(processText);
+                }
+
+                reader.read().then(processText);
+            } catch (error) {
+                console.error('Stream error:', error);
+            }
+        }
+
+        fetchStream();
+    </script>
+</body>
+</html>
